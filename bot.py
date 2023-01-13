@@ -1,10 +1,12 @@
 import discord
 import random
+import json
+with open('setting.json', mode='r', encoding="utf8") as jfile:
+    jdata = json.load(jfile)
 from discord.ext import commands
 
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='$', intents=intents)
-lucklist = []
 
 @bot.event
 async def on_ready():
@@ -12,14 +14,26 @@ async def on_ready():
 
 @bot.event
 async def on_member_join(member):
-    channel = bot.get_channel(1063374703613456454)
-    await channel.send(f'歡迎 @{member} on9仔入群!')
+    channel = bot.get_channel(int(jdata['joinchannel_id']))
+    await channel.send(f'歡迎 {member} on9仔入群!')
 
 @bot.event
 async def on_member_remove(member):
-    channel = bot.get_channel(1063374737771872286)
-    await channel.send(f'屌你 @{member} on9仔退群!')
+    channel = bot.get_channel(int(jdata['leavechannel_id']))
+    await channel.send(f'屌你 {member} on9仔退群!')
 
+@bot.event
+async def on_message(message):
+    if message.content == '小丑':
+        random_clown = random.choice(jdata['clown'])
+        await message.channel.send(random_clown)
+    await bot.process_commands(message)
+
+@bot.command()
+async def luck(ctx):
+    random_luck = random.choice(jdata['lucklist'])
+    await ctx.send(f'你的運勢為{random_luck}')
+    
 @bot.command()
 async def ping(ctx):
     await ctx.send('你有'f'{round(bot.latency*1000)}ms延遅')
@@ -31,4 +45,4 @@ async def ping(ctx):
         await ctx.send('暢通無阻')
 
 
-bot.run('MTA2MzMzMTczNDk2OTY1OTQxMg.GcZHiJ.ITR9A6u6ElXCAcKay-Fgq-Fq8v3ImhOAUx6hbs')
+bot.run(jdata['TOKEN'])
